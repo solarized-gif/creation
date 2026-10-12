@@ -1,225 +1,227 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><title>ConceptForge — Device Concept Studio</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<html lang="en"><head><meta charset="utf-8"><title>ConceptForge 3D — Product Concept Studio</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
-:root{--bg:#0f1013;--p:#17191e;--p2:#1f2229;--b:#2a2e37;--t:#cfd4de;--m:#7b8291;--ac:#6aa5ff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--bg:#0e0f12;--p:#16181d;--p2:#1f2229;--b:#2a2e37;--t:#d0d5df;--m:#7b8291;--ac:#6aa5ff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--t);font:12px/1.4 Inter,system-ui,sans-serif;overflow:hidden}
 body{display:flex;flex-direction:column}
-.sb{width:252px;flex:none;background:var(--p);overflow-y:auto;transition:margin .2s}
-.sb.c{margin-left:-252px}.sb.rt.c{margin-left:0;margin-right:-252px}
+.sb{width:262px;flex:none;background:var(--p);overflow-y:auto}
 .h{padding:12px 12px 4px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--m)}
 .bt{background:var(--p2);border:1px solid var(--b);border-radius:7px;padding:5px 9px;color:var(--t);cursor:pointer;font:inherit;white-space:nowrap}
 .bt:hover{border-color:var(--ac)}.bt.on,.bt.pr{background:var(--ac);border-color:var(--ac);color:#06101f;font-weight:600}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px 12px}
-.rw{display:flex;align-items:center;gap:8px;padding:3px 12px}.rw>span{width:76px;color:var(--m);flex:none}
-.rw input[type=range]{flex:1;min-width:0;accent-color:var(--ac)}.rw input[type=color]{width:34px;height:24px;border:0;background:none;padding:0}.rw select{flex:1;min-width:0}
-select{background:var(--p2);color:var(--t);border:1px solid var(--b);border-radius:6px;padding:4px}
-.ly{display:flex;align-items:center;gap:6px;padding:4px 10px;border-bottom:1px solid #1d2026;cursor:pointer}.ly.on{background:#24324a}
-.ly span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ly i{font-style:normal;cursor:pointer;opacity:.85}
-#cw{margin:auto;box-shadow:0 0 0 1px var(--b)}
-.chk{background:conic-gradient(#2a2d34 25%,#1f2228 0 50%,#2a2d34 0 75%,#1f2228 0) 0 0/24px 24px}.dk{background:#0b0c0f}.lt{background:#e9ecf1}
-#pv{position:fixed;inset:0;background:radial-gradient(#252a35,#07080a);display:none;align-items:center;justify-content:center;perspective:1200px;z-index:50;cursor:zoom-out}
-#pi{max-width:80vw;max-height:80vh;transition:transform .1s;filter:drop-shadow(0 40px 40px rgba(0,0,0,.6))}
+.rw{display:flex;align-items:center;gap:8px;padding:3px 12px}.rw>span{width:78px;flex:none;color:var(--m)}.rw>b{width:38px;text-align:right;font-weight:500}
+.rw input[type=range]{flex:1;min-width:0;accent-color:var(--ac)}.rw input[type=color]{width:34px;height:24px;border:0;background:none;padding:0}.rw select,.rw .in{flex:1;min-width:0}
+select,.in{background:var(--p2);color:var(--t);border:1px solid var(--b);border-radius:6px;padding:4px}
+.ly{display:flex;align-items:center;gap:7px;padding:4px 10px;border-bottom:1px solid #1c1f25;cursor:pointer}.ly.on{background:#24324a}.ly span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ly i{font-style:normal;opacity:.8}
+#vp{position:relative;background:conic-gradient(#23262d 25%,#1a1c21 0 50%,#23262d 0 75%,#1a1c21 0) 0 0/28px 28px}
+#gl{width:100%;height:100%;display:block;touch-action:none}
+#vb{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:4px;padding:4px;background:rgba(22,24,29,.88);border:1px solid var(--b);border-radius:10px;flex-wrap:wrap;justify-content:center;max-width:94%}
+#hint{position:absolute;bottom:8px;left:12px;color:var(--m);pointer-events:none}
+#tb{display:flex;gap:6px;padding:10px 12px 4px}
 </style></head>
 <body>
-<header class="flex items-center gap-2 px-3 flex-none flex-wrap" style="background:var(--p);border-bottom:1px solid var(--b);min-height:46px">
-<button class="bt" id="tl" title="Toggle left panel">☰</button>
-<b class="tracking-wide mr-1">Concept<span style="color:var(--ac)">Forge</span></b>
-<select id="ts"></select><span class="flex-1"></span>
-<button class="bt" id="zo">−</button><span id="zl" class="w-10 text-center">100%</span><button class="bt" id="zi">+</button><button class="bt" id="zf">Fit</button>
-<button class="bt" id="bg">Backdrop</button>
-<label class="flex items-center gap-1"><input type="checkbox" id="sn" checked>Snap</label>
-<button class="bt" id="p3">3D Preview</button>
-<select id="xs"><option value="1">1×</option><option value="2" selected>2×</option><option value="3">3×</option></select>
-<label class="flex items-center gap-1"><input type="checkbox" id="tm" checked>Trim</label>
-<button class="bt pr" id="ex">Export PNG (alpha)</button>
-<button class="bt" id="tr" title="Toggle right panel">⚙</button>
+<header class="flex items-center gap-2 px-3 py-2 flex-wrap" style="background:var(--p);border-bottom:1px solid var(--b)">
+<b class="tracking-wide">Concept<span style="color:var(--ac)">Forge</span> 3D</b>
+<select id="ts"></select><button class="bt" id="un" title="Undo (Ctrl+Z)">↶</button><button class="bt" id="re" title="Redo (Ctrl+Y)">↷</button>
+<span class="flex-1"></span>
+<label class="flex items-center gap-1"><input type="checkbox" id="sn" checked>Snap 0.5mm</label>
+<button class="bt" id="pl">Place logo / decal…</button><button class="bt pr" id="ex">Export PNG</button>
 </header>
 <div class="flex flex-1 min-h-0">
 <aside class="sb" id="L" style="border-right:1px solid var(--b)">
-<div class="h">Templates</div><div class="g2" id="tg"></div>
-<div class="h">Create</div>
-<div class="g2"><button class="bt" id="aR">▭ Rect</button><button class="bt" id="aC">◯ Circle</button><button class="bt" id="aP">⬭ Pill</button><button class="bt" id="aT">T Text</button><button class="bt" id="aD">✎ Draw</button><button class="bt" id="aI">⇪ Image</button></div>
-<input type="file" id="fi" accept="image/*" hidden>
-<div class="h">Layers</div>
-<div class="g2" style="grid-template-columns:repeat(4,1fr)"><button class="bt" id="gG" title="Group (Ctrl+G)">Grp</button><button class="bt" id="gU" title="Ungroup">Ungr</button><button class="bt" id="gD" title="Duplicate (Ctrl+D)">Dup</button><button class="bt" id="gX" title="Delete">Del</button></div>
-<div id="ly" class="mt-2"></div>
+<div class="h">Parts</div><div id="ol"></div>
+<div class="h">Add part</div><div class="g2" id="ad"></div>
+<div class="h">Modules</div><div class="g2" id="md"></div>
 </aside>
-<main id="vp" class="flex-1 overflow-auto flex" style="background:#0b0c0f"><div id="cw" class="chk"><canvas id="c"></canvas></div></main>
-<aside class="sb rt" id="Rr" style="border-left:1px solid var(--b)">
-<div class="h">Lighting</div>
-<div class="rw"><span>Light angle</span><input type="range" id="L1" min="0" max="360"><b id="Lv" class="w-9 text-right"></b></div>
-<div class="rw"><span>Shadow depth</span><input type="range" id="sh" min="0" max="80"></div>
-<div class="rw"><span>Specular</span><input type="range" id="sp" min="0" max="100"></div>
-<div class="h">Material</div><div class="g2" id="mg"></div>
-<div class="rw"><span>Chassis</span><input type="color" id="cc"></div>
-<div class="rw"><span>Keys / parts</span><input type="color" id="ac"></div>
-<div class="h">Screen</div>
-<div class="rw"><span>Colors</span><input type="color" id="sa"><input type="color" id="sb2"></div>
-<div class="rw"><span>Emissive glow</span><input type="range" id="gl" min="0" max="100"></div>
-<div class="rw"><span>Glass gloss</span><input type="range" id="gs" min="0" max="100"></div>
-<div class="h">Selected layer</div>
-<div class="rw"><span>Color</span><input type="color" id="pc" value="#8e9aa8"></div>
-<div class="rw"><span>Material</span><select id="pm"></select></div>
-<div class="rw"><span>Opacity</span><input type="range" id="po" min="5" max="100" value="100"></div>
-<div class="rw"><span>Blend</span><select id="pb"><option>source-over</option><option>multiply</option><option>screen</option><option>overlay</option><option>soft-light</option><option>lighten</option></select></div>
-<div class="rw"><span>Corner radius</span><input type="range" id="pr" min="0" max="120" value="0"></div>
-<div class="g2" style="grid-template-columns:1fr"><button class="bt" id="mp" title="Fit and clip the selected layer onto the device screen">Map selection onto screen</button></div>
-<div class="p-3" style="color:var(--m)">Ctrl+wheel zoom · Del delete · Ctrl+D duplicate · Ctrl+G group</div>
+<main id="vp" class="flex-1"><canvas id="gl"></canvas><div id="vb"></div><div id="hint"></div></main>
+<aside class="sb" id="R" style="border-left:1px solid var(--b)">
+<div id="tb"></div>
+<div id="rp"><div id="pt"></div><div id="sc2" style="display:none"></div>
+<div id="xp" style="display:none">
+<div class="h">Render</div>
+<div class="rw"><span>Resolution</span><select id="xs"><option value="1">1×</option><option value="2" selected>2×</option><option value="3">3×</option><option value="4">4×</option></select></div>
+<div class="rw"><span>Ground shadow</span><input type="checkbox" id="xg" checked></div>
+<div class="g2" style="grid-template-columns:1fr"><button class="bt pr" id="e1">PNG — current view (alpha)</button><button class="bt" id="e2">PNG — 4-angle sheet (alpha)</button></div>
+<div class="p-3" style="color:var(--m)">Transparent background. Sheet = front / 3-4 / side / back (or top-down set for flat devices), capped at 2×.</div>
+</div></div>
 </aside></div>
-<div id="pv"><img id="pi" alt="3D preview"></div>
+<input type="file" id="fi" accept="image/*" hidden>
 <script>
-const $=s=>document.querySelector(s),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),W=1400,H=1000;
-Object.assign(fabric.Object.prototype,{transparentCorners:false,cornerColor:'#fff',cornerStrokeColor:'#6aa5ff',borderColor:'#6aa5ff',cornerStyle:'circle',cornerSize:9,padding:3,strokeUniform:true});
-const cv=new fabric.Canvas('c',{width:W,height:H,backgroundColor:null,preserveObjectStacking:true,stopContextMenu:true});
-const G={mat:'aluminum',L:225,sh:26,spec:.6,glow:.7,gloss:.5,A:'#3a7bff',B:'#a64dff',col:'#98a2b3',ac:'#6b7483',cur:'Concept'};
-const MATS={
-aluminum:{n:'Anodized Aluminum',s:[[0,.34],[.4,.04],[.62,-.1],[1,-.34]],t:'fine'},
-ceramic:{n:'Matte Ceramic',s:[[0,.14],[1,-.2]],t:'grain'},
-glass:{n:'Polished Glass',s:[[0,.5],[.18,.08],[.5,-.2],[.52,.12],[1,-.45]]},
-titanium:{n:'Brushed Titanium',s:[[0,.28],[.5,-.02],[1,-.3]],t:'brush'},
-carbon:{n:'Carbon Fiber',s:[[0,.14],[.5,0],[1,-.4]],t:'weave'}};
-const rgb=h=>{const n=parseInt(h.slice(1),16);return[n>>16,n>>8&255,n&255]},rgba=(h,a)=>`rgba(${rgb(h)},${a})`,
-shade=(h,d)=>{const t=d<0?0:255,p=Math.abs(d);return`rgb(${rgb(h).map(v=>Math.round(v+(t-v)*p))})`};
-const each=(o,f)=>{f(o);o._objects&&o._objects.forEach(c=>each(c,f))},all=f=>cv.getObjects().forEach(o=>each(o,f));
-function tex(o,m,st,a){
-const w=Math.ceil(o.width),h=Math.ceil(o.height),k=document.createElement('canvas');k.width=w;k.height=h;
-const x=k.getContext('2d'),c=Math.cos(a),s=Math.sin(a),g=x.createLinearGradient(w*(.5+c/2),h*(.5+s/2),w*(.5-c/2),h*(.5-s/2));
-if(m.t=='weave'){const t=document.createElement('canvas');t.width=t.height=8;const y=t.getContext('2d');y.fillStyle='#14161a';y.fillRect(0,0,8,8);y.fillStyle='rgba(255,255,255,.1)';y.fillRect(0,0,4,4);y.fillRect(4,4,4,4);y.fillStyle='rgba(255,255,255,.04)';y.fillRect(4,0,4,4);x.fillStyle=x.createPattern(t,'repeat');x.fillRect(0,0,w,h);
-[[0,`rgba(255,255,255,${.5*G.spec})`],[.5,'rgba(255,255,255,0)'],[1,'rgba(0,0,0,.55)']].forEach(([p,q])=>g.addColorStop(p,q))}
-else st.forEach(([p,q])=>g.addColorStop(p,q));
-x.fillStyle=g;x.fillRect(0,0,w,h);
-if(m.t=='brush'||m.t=='fine')for(let i=0;i<h;i++){x.globalAlpha=(m.t=='brush'?.12:.05)*((i*7919)%13)/13;x.fillStyle=i%2?'#fff':'#000';x.fillRect(0,i,w,1)}
-if(m.t=='grain'){x.globalAlpha=.1;for(let i=0;i<w*h/30;i++){x.fillStyle=i%2?'#fff':'#000';x.fillRect((i*7919)%w,(i*104729)%h,1.5,1.5)}}
-return new fabric.Pattern({source:k,repeat:'no-repeat'})}
-function lit(o){
-if(o._objects){o.dirty=true;return}
-const r=o.role;if(!r)return;
-const a=G.L*Math.PI/180,c=Math.cos(a),s=Math.sin(a),w=o.width,h=o.height,d=G.sh,
-ln=st=>new fabric.Gradient({type:'linear',gradientUnits:'pixels',coords:{x1:w*(.5+c/2),y1:h*(.5+s/2),x2:w*(.5-c/2),y2:h*(.5-s/2)},colorStops:st.map(([offset,color])=>({offset,color}))}),
-sh=(col,b,k)=>new fabric.Shadow({color:col,blur:b,offsetX:-c*k,offsetY:-s*k});
-if(r=='body'||r=='key'||r=='part'||r=='shape'){
-const m=MATS[o.mat||G.mat],big=r=='body',st=m.s.map(([p,v])=>[p,shade(o.base,v>0?v*G.spec*1.4:v)]);
-if(!o.tx)o.set('fill',big&&m.t?tex(o,m,st,a):ln(st));
-o.set({stroke:ln([[0,`rgba(255,255,255,${.6*G.spec})`],[.5,'rgba(255,255,255,0)'],[1,'rgba(0,0,0,.55)']]),strokeWidth:big?3:1.5,shadow:sh('rgba(0,0,0,.55)',big?d*1.6:d/4+2,big?d:d/5)})}
-else if(r=='dark')o.set({fill:ln([[0,shade(o.base,-.4)],[1,shade(o.base,.12)]]),stroke:ln([[0,'rgba(0,0,0,.6)'],[1,`rgba(255,255,255,${.22*G.spec})`]]),strokeWidth:1.5});
-else if(r=='screen'){const g=G.glow;o.set({fill:new fabric.Gradient({type:'linear',gradientUnits:'pixels',coords:{x1:0,y1:0,x2:w,y2:h},colorStops:[{offset:0,color:G.A},{offset:1,color:G.B}]}),shadow:g?new fabric.Shadow({color:rgba(G.A,.85*g),blur:90*g}):null})}
-else if(r=='gloss'){const g=G.gloss,f=x=>`rgba(255,255,255,${x*g})`;o.set({fill:ln([[0,f(.55)],[.4,f(.08)],[.41,f(0)],[1,f(.06)]]),globalCompositeOperation:'screen'})}
-else if(r=='text'||r=='ink'||(r=='img'&&!o.mapped))o.set('shadow',sh('rgba(0,0,0,.45)',d/2,d/4))}
-let q=0;const upd=()=>{q||(q=requestAnimationFrame(()=>{q=0;all(lit);cv.requestRenderAll()}))};
-const R=(x,y,w,h,rx,role,nm,c,e={})=>new fabric.Rect({left:x,top:y,width:w,height:h,rx,ry:rx,role,nm,base:c,fill:c,...(role=='gloss'?{evented:false}:{}),...e}),
-C=(x,y,r,role,nm,c,e={})=>new fabric.Circle({left:x-r,top:y-r,radius:r,role,nm,base:c,fill:c,...e}),
-T_=(t,x,y,s,f,e={})=>new fabric.IText(t,{left:x,top:y,fontSize:s,fill:f,fontFamily:'Inter,system-ui,sans-serif',role:'plain',nm:t,...e}),
-glow=(c,b)=>({shadow:new fabric.Shadow({color:c,blur:b})});
+const $=s=>document.querySelector(s),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),R2=Math.PI/180,vp=$('#vp'),cvs=$('#gl');
+const G={la:35,le:42,li:1.1,sh:.4,ex:1,sn:1},parts=[],OB={},IM={},PT=id=>parts.find(p=>p.id==id);
+let sel=null,uid=1,tpl=0,hist=[],hi=-1,dirty=1,FD=400,RAD=100,ctr=new THREE.Vector3(),placing=null,mv=null,mode=null,lx=0,ly=0,moved=0;
+const draw=()=>{dirty=1};
+const rd=new THREE.WebGLRenderer({canvas:cvs,antialias:true,alpha:true,preserveDrawingBuffer:true});
+rd.outputEncoding=THREE.sRGBEncoding;rd.toneMapping=THREE.ACESFilmicToneMapping;rd.shadowMap.enabled=true;rd.shadowMap.type=THREE.PCFShadowMap;rd.setClearColor(0,0);
+const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(24,1,10,8000),root=new THREE.Group(),pm=new THREE.PMREMGenerator(rd),sun=new THREE.DirectionalLight(0xffffff,1.1),
+gr=new THREE.Mesh(new THREE.PlaneGeometry(4000,4000),new THREE.ShadowMaterial({opacity:.4})),bx=new THREE.BoxHelper(new THREE.Object3D(),0x6aa5ff),pn=new THREE.Plane(),rc=new THREE.Raycaster(),ndc=new THREE.Vector2(),tv=new THREE.Vector3();
+gr.rotation.x=-Math.PI/2;gr.receiveShadow=true;bx.visible=false;sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.radius=5;sun.shadow.bias=-.0004;
+Object.assign(sun.shadow.camera,{left:-300,right:300,top:300,bottom:-300,near:10,far:1600});sun.shadow.camera.updateProjectionMatrix();
+sc.add(root,sun,sun.target,gr,bx);
+const envS=new THREE.Scene(),eg=new THREE.Group();envS.add(eg,new THREE.Mesh(new THREE.SphereGeometry(40,16,8),new THREE.MeshBasicMaterial({color:0x262b34,side:THREE.BackSide})));
+[[0,42,10,7,16],[180,25,8,6,3],[95,12,2.5,12,10],[-95,12,2.5,12,10],[0,88,12,12,5],[180,-10,16,3,2]].forEach(([a,e,w,h,i])=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({color:new THREE.Color().setScalar(i),side:2}));a*=R2;e*=R2;m.position.set(Math.sin(a)*Math.cos(e),Math.sin(e),Math.cos(a)*Math.cos(e)).multiplyScalar(16);m.lookAt(0,0,0);eg.add(m)});
+let et;
+const light=()=>{const a=G.la*R2,e=G.le*R2;sun.position.set(Math.sin(a)*Math.cos(e),Math.sin(e),Math.cos(a)*Math.cos(e)).multiplyScalar(700).add(ctr);sun.target.position.copy(ctr);sun.target.updateMatrixWorld();sun.intensity=G.li;draw()},
+env=()=>{eg.rotation.y=G.la*R2;et&&et.dispose();et=pm.fromScene(envS,.02);sc.environment=et.texture;light()};
+const cvx=(w,h,f)=>{const c=document.createElement('canvas');c.width=w;c.height=h;f(c.getContext('2d'),w,h);return c},
+CT=(c,rep)=>{const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;if(rep){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep,rep)}return t},TX={},
+tex=k=>TX[k]||(TX[k]=k=='weave'?CT(cvx(64,64,x=>{x.fillStyle='#15171b';x.fillRect(0,0,64,64);for(let i=0;i<8;i++)for(let j=0;j<8;j++){x.fillStyle=(i+j)%2?'#2e3138':'#0b0c0f';x.fillRect(i*8,j*8,8,4);x.fillStyle=(i+j)%2?'#0b0c0f':'#2e3138';x.fillRect(i*8,j*8+4,8,4)}}),20):CT(cvx(512,512,(x,w,h)=>{x.fillStyle='#808080';x.fillRect(0,0,w,h);for(let i=0;i<(k=='brush'?2400:12000);i++){const v=i%2?255:0;x.fillStyle=`rgba(${v},${v},${v},.1)`;k=='brush'?x.fillRect(0,Math.random()*h,w,1):x.fillRect(Math.random()*w,Math.random()*h,1.6,1.6)}}),1));
+const MAT={
+alu:{n:'Anodized Aluminum',c:'#9aa1ad',r:.38,m:1,t:'brush',bs:.5},ti:{n:'Brushed Titanium',c:'#8a8782',r:.46,m:1,t:'brush',bs:1.1},
+ceramic:{n:'Matte Ceramic',c:'#e9e7e1',r:.5,m:0,cc:.4,ccr:.3,t:'grain',bs:.15},glass:{n:'Polished Glass',c:'#0a0c10',r:.04,m:0,cc:1,ccr:.02,env:1.6},
+carbon:{n:'Carbon Fiber',c:'#ffffff',r:.32,m:.3,cc:1,ccr:.06,t:'weave',bs:.7,map:1},plastic:{n:'Soft-touch Plastic',c:'#2a2d35',r:.6,m:0,t:'grain',bs:.2},
+rubber:{n:'Rubber',c:'#1b1d22',r:.85,m:0,t:'grain',bs:.6},black:{n:'Black Cutout',c:'#030303',r:.7,m:0},emit:{n:'Emissive',c:'#39ff88',r:.4,m:0,em:1.6},
+screen:{n:'Screen',c:'#ffffff',r:.06,m:0,cc:1,ccr:.02},plain:{n:'Plain',c:'#ffffff',r:.5,m:0}};
+function mk(p){const d=MAT[p.m]||MAT.plastic,col=new THREE.Color(p.c||d.c),M=new THREE.MeshPhysicalMaterial({color:col,roughness:p.ro??d.r,metalness:p.me??d.m,clearcoat:d.cc||0,clearcoatRoughness:d.ccr||0,envMapIntensity:d.env||1});
+if(d.t){M.bumpMap=tex(d.t);M.bumpScale=d.bs;if(d.map)M.map=tex(d.t)}if(d.em){M.emissive=col;M.emissiveIntensity=d.em;M.toneMapped=false}return M}
+const rr=(w,h,r)=>{r=Math.max(.01,Math.min(r,w/2-.01,h/2-.01));const x=-w/2,y=-h/2,s=new THREE.Shape(),P=Math.PI;s.moveTo(x+r,y);s.lineTo(x+w-r,y);s.absarc(x+w-r,y+r,r,-P/2,0);s.lineTo(x+w,y+h-r);s.absarc(x+w-r,y+h-r,r,0,P/2);s.lineTo(x+r,y+h);s.absarc(x+r,y+h-r,r,P/2,P);s.lineTo(x,y+r);s.absarc(x+r,y+r,r,P,1.5*P);return s};
+function smooth(g){g.computeVertexNormals();const P=g.attributes.position,N=g.attributes.normal,m={},K=i=>Math.round(P.getX(i)*500)+','+Math.round(P.getY(i)*500)+','+Math.round(P.getZ(i)*500),o=new Float32Array(N.array.length),a=new THREE.Vector3(),b=new THREE.Vector3();
+for(let i=0;i<P.count;i++)(m[K(i)]=m[K(i)]||[]).push(i);
+for(let i=0;i<P.count;i++){a.fromBufferAttribute(N,i);const s=a.clone();m[K(i)].forEach(j=>{if(j!=i){b.fromBufferAttribute(N,j);if(a.dot(b)>.7)s.add(b)}});s.normalize();o.set([s.x,s.y,s.z],i*3)}
+N.array.set(o);N.needsUpdate=true;return g}
+const GC={},slabG=p=>{const k=[p.w,p.h,p.d,p.r,p.b].join();if(GC[k])return GC[k];const b=Math.max(0,Math.min(p.b,p.d/2-.02,p.w/2-.02,p.h/2-.02,p.r)),g=new THREE.ExtrudeGeometry(rr(p.w-2*b,p.h-2*b,p.r-b),{depth:p.d-2*b,bevelEnabled:b>0,bevelThickness:b,bevelSize:b,bevelSegments:6,curveSegments:10});g.translate(0,0,-(p.d-2*b)/2);return GC[k]=smooth(g)},
+cylG=p=>{const R=p.rad,H=p.h,b=Math.min(p.b,R/2,H/2);return new THREE.LatheGeometry([[0,0],[R-b,0],[R-b*.3,b*.1],[R,b],[R,H-b],[R-b*.3,H-b*.1],[R-b,H],[0,H]].map(([x,y])=>new THREE.Vector2(x,y)),64).translate(0,-H/2,0).rotateX(Math.PI/2)},
+scrG=p=>{const g=new THREE.ShapeGeometry(rr(p.w,p.h,p.r),12),P=g.attributes.position,U=g.attributes.uv;for(let i=0;i<P.count;i++)U.setXY(i,P.getX(i)/p.w+.5,P.getY(i)/p.h+.5);return g};
+const scrTex=(k,w,h)=>{let t;if(k&&k.startsWith('img:')&&IM[k.slice(4)])return IM[k.slice(4)];
+t=CT(cvx(512,Math.max(64,Math.round(512*h/w)),(x,W,H)=>{const g=x.createLinearGradient(0,0,W,H),F=(a,b)=>{g.addColorStop(0,a);g.addColorStop(1,b);x.fillStyle=g;x.fillRect(0,0,W,H)};x.textAlign='center';
+if(k=='phone'){F('#2c5bff','#b44dff');x.fillStyle='#fff';x.font=`300 ${W*.2}px sans-serif`;x.fillText('9:41',W/2,H*.26);x.font=`${W*.04}px sans-serif`;x.fillText('Thursday 12 October',W/2,H*.31);x.fillStyle='rgba(255,255,255,.28)';for(let i=0;i<8;i++)x.fillRect(W*.09+i%4*W*.225,H*.62+(i>>2)*W*.225,W*.18,W*.18)}
+else if(k=='watch'){F('#000','#000');[['#ff2d55',.72],['#a6ff00',.55],['#00e0ff',.4]].forEach(([c,p],i)=>{x.strokeStyle=c;x.lineWidth=W*.06;x.lineCap='round';x.beginPath();x.arc(W/2,H*.64,W*(.37-i*.09),-1.57,-1.57+6.28*p);x.stroke()});x.fillStyle='#fff';x.font=`600 ${W*.2}px sans-serif`;x.fillText('10:09',W/2,H*.2)}
+else if(k=='game'){F('#1b0b3d','#ff2bd6');x.fillStyle='#0a0620';for(let i=0;i<W;i+=16)x.fillRect(i,H*.7-Math.abs(Math.sin(i*.02))*H*.25,16,H);x.fillStyle='#00e5ff';x.fillRect(W*.3,H*.5,24,32);x.fillStyle='#fff';x.font=`${W*.07}px monospace`;x.fillText('SCORE 004200',W/2,H*.12);x.fillStyle='rgba(0,0,0,.18)';for(let i=0;i<H;i+=4)x.fillRect(0,i,W,2)}
+else{x.fillStyle='#02100a';x.fillRect(0,0,W,H);x.fillStyle=k=='oled'?'#9ff':'#39ff88';x.font=`${W*.045}px monospace`;x.textAlign='left';(k=='oled'?['LAYER 1 · ONLINE','MACRO 04 ARMED']:['> boot node-7 ok','> mesh link: 3 peers','> scanning 2.4GHz...','> uplink stable','> _']).forEach((s,i)=>x.fillText(s,W*.05,H*.14+i*H*.17))}}));return t};
+const BLD={
+slab:p=>new THREE.Mesh(slabG(p.p),mk(p)),cyl:p=>new THREE.Mesh(cylG(p.p),mk(p)),sph:p=>new THREE.Mesh(new THREE.SphereGeometry(p.p.rad,32,16),mk(p)),
+scr:p=>{const M=mk(p),t=scrTex(p.p.k,p.p.w,p.p.h);M.map=M.emissiveMap=t;M.emissive=new THREE.Color(1,1,1);M.emissiveIntensity=.85*p.p.br;M.toneMapped=false;M.polygonOffset=true;M.polygonOffsetFactor=M.polygonOffsetUnits=-1;return new THREE.Mesh(scrG(p.p),M)},
+keys:p=>{const r=p.p,g=new THREE.Group(),M1=mk(p),M2=mk({...p,c:r.c2||p.c}),u=r.u,rows=r.lay?Array.from({length:r.ny},()=>Array(r.nx).fill(1)):[[...Array(13).fill(1),2,1],[1.5,...Array(12).fill(1),1.5,1],[1.75,...Array(11).fill(1),2.25,1],[2.25,...Array(10).fill(1),1.75,1,1],[1.25,1.25,1.25,6.25,1,1,1,1,1,1]];
+if(!r.lay&&r.fn)rows.unshift(Array(15).fill(1));const x0=-(r.lay?r.nx:16)*u/2,y0=rows.length*u/2;
+rows.forEach((row,j)=>{let x=x0;row.forEach(w=>{const m=new THREE.Mesh(slabG({w:w*u-r.gap,h:u-r.gap,d:r.kd,r:Math.min(1.8,(u-r.gap)/2.5),b:Math.min(1.1,r.kd/3)}),w==1||r.lay?M1:M2);m.position.set(x+w*u/2,y0-(j+.5)*u,0);g.add(m);x+=w*u})});return g},
+holes:p=>{const r=p.p,n=r.nx*r.ny,im=new THREE.InstancedMesh(new THREE.CircleGeometry(r.rad,16),mk(p),n),m=new THREE.Matrix4();for(let i=0;i<n;i++){m.setPosition((i%r.nx-(r.nx-1)/2)*r.px,((i/r.nx|0)-(r.ny-1)/2)*r.py,0);im.setMatrixAt(i,m)}return im},
+text:p=>{const r=p.p,t=CT(cvx(1024,256,(x,w,h)=>{x.font='700 150px system-ui,Arial,sans-serif';const k=Math.min(1,960/x.measureText(r.txt).width);x.font=`700 ${150*k}px system-ui,Arial,sans-serif`;x.textAlign='center';x.textBaseline='middle';x.fillStyle='#fff';x.fillText(r.txt,w/2,h/2)})),
+m=new THREE.MeshStandardMaterial({map:t,color:p.c,transparent:true,roughness:.5,metalness:.1,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,depthWrite:false});if(p.m=='emit'){m.emissive=new THREE.Color(p.c);m.emissiveMap=t;m.emissiveIntensity=1.2;m.toneMapped=false}return new THREE.Mesh(new THREE.PlaneGeometry(r.size*6.83,r.size*1.7),m)},
+decal:p=>{const t=IM[p.p.img],a=t?t.image.width/t.image.height:1;return new THREE.Mesh(new THREE.PlaneGeometry(p.p.w,p.p.w/a),new THREE.MeshStandardMaterial({map:t,transparent:true,roughness:.5,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,depthWrite:false}))}};
+function build(p){const old=OB[p.id];if(old){root.remove(old);old.traverse(m=>{m.material&&m.material.dispose()})}
+const o=BLD[p.t](p);o.userData.id=p.id;o.position.set(p.x,p.y,p.z);o.rotation.set(p.rx*R2,p.ry*R2,p.rz*R2);o.visible=!p.hd;o.traverse(m=>{if(m.isMesh){m.castShadow=!/scr|holes|text|decal/.test(p.t);m.receiveShadow=true}});OB[p.id]=o;root.add(o);return o}
+const P=(n,t,p,x,y,z,m,c,o={})=>({n,t,p,x,y,z,rx:0,ry:0,rz:0,m,c,...o}),
+S=(n,w,h,d,r,x,y,z,m,c,o)=>P(n,'slab',{w,h,d,r,b:Math.min(.8,d/3,r/2+.01)},x,y,z,m,c,o),
+Y=(n,rad,h,x,y,z,m,c,o)=>P(n,'cyl',{rad,h,b:Math.min(.6,rad/4,h/4)},x,y,z,m,c,o),
+D=(n,w,h,r,x,y,z,k,o)=>P(n,'scr',{w,h,r,br:1,k},x,y,z,'screen','#ffffff',o);
 const T=[
-{n:'Smartphone',i:'📱',m:'aluminum',col:'#98a2b3',ac:'#7d8696',sc:['#3a7bff','#a64dff'],f:()=>[
-R(874,300,12,96,5,'part','Power key',G.ac,{a:1}),R(514,190,12,36,5,'part','Action key',G.ac,{a:1}),R(514,250,12,66,5,'part','Volume +',G.ac,{a:1}),R(514,332,12,66,5,'part','Volume −',G.ac,{a:1}),
-R(520,120,360,760,66,'body','Chassis',G.col,{g:1}),R(531,131,338,738,56,'dark','Glass bezel','#050608'),R(543,143,314,714,45,'screen','Display','#000'),
-T_('9:41',566,168,24,'#fff',{fontWeight:700}),R(572,300,256,150,30,'plain','Widget','#ffffff',{opacity:.2}),T_('Concept 01',592,322,22,'#fff',{fontWeight:700}),T_('Liquid-glass OLED',592,352,14,'#fff',{opacity:.8}),
-...[0,1,2,3].map(i=>R(572+i*68,500,56,56,16,'plain','App '+(i+1),'#ffffff',{opacity:.22})),
-R(650,158,100,30,15,'dark','Dynamic Island','#020203'),R(640,832,120,6,3,'plain','Home bar','#ffffff',{opacity:.8}),R(543,143,314,714,45,'gloss','Glass reflection','#fff')]},
-{n:'Smartwatch',i:'⌚',m:'titanium',col:'#c4cad4',ac:'#1d2330',sc:['#00e0ff','#0a1730'],f:()=>[
-R(590,70,220,300,44,'part','Strap top',G.ac,{a:1}),R(590,630,220,300,44,'part','Strap bottom',G.ac,{a:1}),R(832,402,32,72,12,'part','Digital crown','#8d96a5'),R(836,506,22,60,9,'part','Side button','#8d96a5'),
-R(560,330,280,340,86,'body','Case',G.col,{g:1}),R(575,345,250,310,72,'dark','Bezel','#050608'),R(586,356,228,288,62,'screen','Display','#000'),
-T_('10:09',700,392,40,'#fff',{originX:'center',fontWeight:700}),
-...[[78,'#ff2d55',.72],[56,'#a6ff00',.55],[34,'#00e0ff',.4]].map(([r,s,p])=>{const L=2*Math.PI*r;return new fabric.Circle({left:700,top:540,originX:'center',originY:'center',radius:r,fill:'',stroke:s,strokeWidth:13,strokeLineCap:'round',strokeDashArray:[L*p,L],angle:-90,role:'plain',nm:'Activity ring '+r})}),
-R(586,356,228,288,62,'gloss','Glass reflection','#fff')]},
-{n:'75% Keyboard',i:'⌨️',m:'aluminum',col:'#2f3541',ac:'#6a7384',sc:['#00e0ff','#0a1730'],f:()=>{
-const rows=[Array(15).fill(1),[...Array(13).fill(1),2,1],[1.5,...Array(12).fill(1),1.5,1],[1.75,...Array(11).fill(1),2.25,1],[2.25,...Array(10).fill(1),1.75,1,1],[1.25,1.25,1.25,6.25,1,1,1,1,1,1]],ks=[];
-rows.forEach((r,j)=>{let x=252;r.forEach(w=>{ks.push(R(x+3,331+j*56,w*56-6,50,8,'key','Key',w==1?'#d4d9e1':G.ac,w==1?{}:{a:1}));x+=w*56})});
-return[R(224,300,952,392,36,'body','Case',G.col,{g:1}),R(238,314,924,364,24,'dark','Plate','#07080a'),R(670,303,60,8,4,'dark','USB-C','#020203'),new fabric.Group(ks,{nm:'Keycaps'}),C(1120,356,23,'part','Rotary knob','#b4bcc9',{a:1}),R(1118,338,4,13,2,'plain','Knob mark','#ffffff')]}},
-{n:'Macro Pad',i:'🎛️',m:'carbon',col:'#1d2027',ac:'#2c313b',sc:['#00ffa3','#04271c'],f:()=>{const ks=[];
-for(let r=0;r<3;r++)for(let i=0;i<4;i++){const hot=(r*4+i)%5==2;ks.push(R(487+i*110,420+r*110,96,96,16,'key','Key '+(r*4+i+1),hot?'#ff3d7f':G.ac,hot?{}:{a:1}))}
-return[R(440,230,520,540,42,'body','Chassis',G.col,{g:1}),R(668,224,64,9,4,'dark','USB-C','#020203'),R(478,262,252,122,12,'dark','OLED bezel','#050608'),R(488,272,232,102,7,'screen','OLED','#000'),T_('LAYER 1 · ONLINE',504,310,17,'#eafff6',{fontFamily:'monospace',fontWeight:700}),R(488,272,232,102,7,'gloss','Glass','#fff'),
-C(808,324,31,'part','Encoder A','#b4bcc9'),R(806,300,4,14,2,'plain','Mark A','#ffffff'),C(896,324,31,'part','Encoder B','#b4bcc9'),R(894,300,4,14,2,'plain','Mark B','#ffffff'),new fabric.Group(ks,{nm:'Keys'})]}},
-{n:'Cyber Handheld',i:'🎮',m:'ceramic',col:'#2b303c',ac:'#14171d',sc:['#00e5ff','#1b0b3d'],f:()=>[
-R(500,100,400,800,38,'body','Shell',G.col,{g:1}),R(660,96,80,10,5,'dark','USB-C','#020203'),R(528,138,344,300,22,'dark','Screen bezel','#07080c'),R(566,168,268,240,6,'screen','LCD','#000'),R(566,168,268,240,6,'gloss','Glass','#fff'),
-R(528,458,344,4,2,'plain','Neon strip','#00e5ff',glow('#00e5ff',16)),T_('NEON·BOY',528,474,28,'#ff2bd6',{fontStyle:'italic',fontWeight:800,charSpacing:120,...glow('#ff2bd6',14)}),
-R(544,622,112,36,9,'key','D-pad H',G.ac,{a:1}),R(582,584,36,112,9,'key','D-pad V',G.ac,{a:1}),C(812,612,33,'key','Button A','#ff2bd6'),C(748,664,33,'key','Button B','#00e5ff'),
-R(596,774,64,16,8,'key','Select','#3b4252',{angle:-25}),R(686,774,64,16,8,'key','Start','#3b4252',{angle:-25}),
-new fabric.Group([0,1,2,3,4,5].map(i=>R(760+i*17,796,7,78,3,'dark','Slot '+i,'#07080b',{angle:-28})),{nm:'Speaker grille'}),C(540,520,5,'plain','Power LED','#ff2d55',glow('#ff2d55',14))]},
-{n:'Modular Cyberdeck',i:'🧰',m:'aluminum',col:'#3a414d',ac:'#2a2f38',sc:['#00ff9c','#06231b'],f:()=>{const ks=[];
-for(let r=0;r<3;r++)for(let i=0;i<13;i++)ks.push(R(243+i*38,630+r*38,34,32,6,'key','Key','#aab2bf'));
-const led=[0,1,2,3,4].map(i=>R(798+i*32,386,24,10,3,'plain','LED '+i,i<4?'#39ff88':'#33463b',i<4?glow('#39ff88',10):{})),vents=[];
-for(let j=0;j<3;j++)for(let i=0;i<8;i++)vents.push(R(790+i*46,606+j*28,32,10,5,'dark','Vent','#08090c'));
-return[R(1048,140,18,130,9,'part','Antenna A','#15181d'),R(1104,170,14,100,7,'part','Antenna B','#15181d'),R(200,250,1000,520,32,'body','Chassis',G.col,{g:1}),
-...[[222,272],[1178,272],[222,748],[1178,748]].map(([x,y],i)=>C(x,y,8,'part','Screw '+(i+1),'#97a0ae')),
-R(230,280,520,320,16,'dark','Display bezel','#06070a'),R(248,298,484,284,6,'screen','Display','#000'),R(248,298,484,284,6,'gloss','Glass','#fff'),
-R(230,620,520,128,12,'dark','Keyboard well','#07080a'),new fabric.Group(ks,{nm:'Mini keyboard'}),
-R(780,280,190,150,16,'part','Battery module',G.ac,{a:1}),T_('PWR 87%',798,300,20,'#c9f7dc',{fontFamily:'monospace',fontWeight:700}),new fabric.Group(led,{nm:'Battery LEDs'}),
-R(990,280,180,150,16,'part','Radio module',G.ac,{a:1}),C(1080,360,34,'part','Tuner dial','#b4bcc9'),R(1078,330,4,14,2,'plain','Dial mark','#ffffff'),
-R(780,450,390,130,14,'dark','IO bay','#07080a'),...[0,1,2].map(i=>R(800+i*66,470,54,24,3,'dark','USB-A '+(i+1),'#010101')),R(1002,472,60,20,3,'dark','HDMI','#010101'),R(1082,466,48,38,4,'dark','Ethernet','#010101'),
-...[0,1,2,3].map(i=>C(812+i*44,544,11,'part','Toggle '+(i+1),'#cfd5de')),new fabric.Group(vents,{nm:'Vents'}),T_('NODE-7 // CYBERDECK',790,700,18,'#ffffff',{fontFamily:'monospace',charSpacing:200,opacity:.6})]}}];
-let busy=0,Z=1;
-const zoom=z=>{Z=clamp(z,.15,4);cv.setZoom(Z);cv.setDimensions({width:W*Z,height:H*Z});$('#zl').textContent=Math.round(Z*100)+'%'},
-fit=()=>{const v=$('#vp');zoom(Math.min((v.clientWidth-40)/W,(v.clientHeight-40)/H))};
-const sync=()=>{$('#L1').value=G.L;$('#Lv').textContent=G.L+'°';$('#sh').value=G.sh;$('#sp').value=G.spec*100;$('#gl').value=G.glow*100;$('#gs').value=G.gloss*100;$('#cc').value=G.col;$('#ac').value=G.ac;$('#sa').value=G.A;$('#sb2').value=G.B;document.querySelectorAll('#mg .bt').forEach(b=>b.classList.toggle('on',b.dataset.k==G.mat))};
-function load(i){busy=1;cv.discardActiveObject();cv.clear();const t=T[i];Object.assign(G,{mat:t.m,col:t.col,ac:t.ac,A:t.sc[0],B:t.sc[1],cur:t.n});cv.add(...t.f());all(lit);busy=0;sync();fit();layers();$('#ts').value=i}
-function layers(){if(busy)return;const a=cv.getActiveObjects(),el=$('#ly');el.innerHTML='';
-cv.getObjects().slice().reverse().forEach(o=>{const d=document.createElement('div');d.className='ly'+(a.includes(o)?' on':'');
-d.innerHTML=`<i title="Hide/show">${o.visible?'◉':'○'}</i><i title="Lock/unlock">${o.lk?'🔒':'🔓'}</i><span>${o.nm||o.type}</span><i title="Bring forward">▲</i><i title="Send backward">▼</i>`;
-const[v,l,,u,w]=d.children,st=(f)=>e=>{e.stopPropagation();f();layers();cv.requestRenderAll()};
-v.onclick=st(()=>{o.visible=!o.visible;cv.discardActiveObject()});
-l.onclick=st(()=>{o.lk=!o.lk;o.set({selectable:!o.lk,evented:!o.lk&&o.role!='gloss'});cv.discardActiveObject()});
-u.onclick=st(()=>o.bringForward());w.onclick=st(()=>o.sendBackwards());
-d.onclick=()=>{if(!o.lk&&o.visible){cv.setActiveObject(o);cv.requestRenderAll()}};el.append(d)})}
-function selSync(){const o=cv.getActiveObject();if(!o)return;let b=null;each(o,x=>{if(!b&&x.role&&/^#/.test(x.base||''))b=x.base});if(b)$('#pc').value=b;$('#po').value=(o.opacity||1)*100;$('#pb').value=o.globalCompositeOperation||'source-over';$('#pm').value=o.mat||''}
-const ev=()=>{if(!busy){layers();selSync()}};
-cv.on({'object:added':ev,'object:removed':ev,'object:modified':ev,'selection:created':ev,'selection:updated':ev,'selection:cleared':ev});
-cv.on('object:moving',e=>{if(!$('#sn').checked)return;const o=e.target,t=9/Z,b=o.getBoundingRect(true,true),mx=[b.left,b.left+b.width/2,b.left+b.width],my=[b.top,b.top+b.height/2,b.top+b.height];let dx=t,dy=t;
-cv.getObjects().forEach(p=>{if(p===o||!p.visible||(o._objects&&o._objects.includes(p)))return;const q=p.getBoundingRect(true,true);
-mx.forEach(a=>[q.left,q.left+q.width/2,q.left+q.width].forEach(c=>{if(Math.abs(c-a)<Math.abs(dx))dx=c-a}));
-my.forEach(a=>[q.top,q.top+q.height/2,q.top+q.height].forEach(c=>{if(Math.abs(c-a)<Math.abs(dy))dy=c-a}))});
-if(Math.abs(dx)<t)o.left+=dx;if(Math.abs(dy)<t)o.top+=dy;o.setCoords()});
-const bind=(id,fn)=>$(id).addEventListener('input',e=>{fn(e.target.value);upd()});
-bind('#L1',v=>{G.L=+v;$('#Lv').textContent=v+'°'});bind('#sh',v=>G.sh=+v);bind('#sp',v=>G.spec=v/100);bind('#gl',v=>G.glow=v/100);bind('#gs',v=>G.gloss=v/100);
-bind('#cc',v=>{G.col=v;all(o=>{if(o.g)o.base=v})});bind('#ac',v=>{G.ac=v;all(o=>{if(o.a)o.base=v})});bind('#sa',v=>G.A=v);bind('#sb2',v=>G.B=v);
-const act=f=>{cv.getActiveObjects().forEach(o=>each(o,f));upd()};
-$('#pc').oninput=e=>act(o=>{if(o.role){o.base=e.target.value;o.g=0;o.a=0;o.tx=0}});
-$('#pm').onchange=e=>act(o=>{if(o.role)o.mat=e.target.value||null});
-$('#po').oninput=e=>{cv.getActiveObjects().forEach(o=>o.set('opacity',e.target.value/100));cv.requestRenderAll()};
-$('#pb').onchange=e=>{cv.getActiveObjects().forEach(o=>o.set('globalCompositeOperation',e.target.value));cv.requestRenderAll()};
-$('#pr').oninput=e=>act(o=>{if(o.type=='rect')o.set({rx:+e.target.value,ry:+e.target.value})});
-T.forEach((t,i)=>{const b=document.createElement('button');b.className='bt';b.textContent=t.i+' '+t.n;b.onclick=()=>load(i);$('#tg').append(b);$('#ts').add(new Option(t.n,i))});
-$('#ts').onchange=e=>load(+e.target.value);
-Object.entries(MATS).forEach(([k,m])=>{const b=document.createElement('button');b.className='bt';b.dataset.k=k;b.textContent=m.n;b.onclick=()=>{G.mat=k;sync();upd()};$('#mg').append(b);$('#pm').add(new Option(m.n,k))});
-$('#pm').add(new Option('Inherit',''),0);
-const add=(o,n)=>{o.nm=n;o.role=o.role||'shape';o.base=o.base||G.col;cv.add(o);cv.setActiveObject(o);each(o,lit);cv.requestRenderAll()};
-$('#aR').onclick=()=>add(new fabric.Rect({left:560,top:420,width:200,height:120,rx:16,ry:16,fill:G.col}),'Rectangle');
-$('#aC').onclick=()=>add(new fabric.Circle({left:620,top:420,radius:70,fill:G.col}),'Circle');
-$('#aP').onclick=()=>add(new fabric.Rect({left:560,top:450,width:220,height:56,rx:28,ry:28,fill:G.col}),'Pill');
-$('#aT').onclick=()=>add(new fabric.IText('CONCEPT',{left:560,top:450,fontSize:54,fontWeight:800,charSpacing:160,fill:'#eaf0fa',fontFamily:'Inter,system-ui,sans-serif',role:'text'}),'Text');
-$('#aD').onclick=e=>{cv.isDrawingMode=!cv.isDrawingMode;e.target.classList.toggle('on',cv.isDrawingMode);const b=cv.freeDrawingBrush;b.color=$('#pc').value;b.width=6};
-cv.on('path:created',e=>{e.path.role='ink';e.path.nm='Drawing';lit(e.path)});
-$('#aI').onclick=()=>$('#fi').click();
-$('#fi').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>fabric.Image.fromURL(r.result,i=>{i.scaleToWidth(Math.min(420,i.width));i.set({left:500,top:380});i.role='img';add(i,f.name.slice(0,22))});r.readAsDataURL(f);e.target.value=''};
-$('#mp').onclick=()=>{const i=cv.getActiveObject(),s=cv.getObjects().find(o=>o.role=='screen');if(!i||!s||i===s||i.type=='activeSelection')return;
-const w=s.width*s.scaleX,h=s.height*s.scaleY,k=Math.max(w/i.width,h/i.height),p=s.getCenterPoint();
-i.set({scaleX:k,scaleY:k,angle:s.angle||0,originX:'center',originY:'center',left:p.x,top:p.y,mapped:true,shadow:null,clipPath:new fabric.Rect({width:w,height:h,rx:s.rx,ry:s.ry,originX:'center',originY:'center',left:p.x,top:p.y,absolutePositioned:true})});
-i.setCoords();cv.moveTo(i,0);cv.moveTo(i,cv.getObjects().indexOf(s));cv.requestRenderAll();layers()};
-$('#gG').onclick=()=>{const a=cv.getActiveObject();if(a&&a.type=='activeSelection'){const g=a.toGroup();g.nm='Group';cv.requestRenderAll();layers()}};
-$('#gU').onclick=()=>{const a=cv.getActiveObject();if(a&&a.type=='group'){a.toActiveSelection();cv.requestRenderAll();layers()}};
-const dup=()=>{const a=cv.getActiveObject();if(!a||a.type=='activeSelection')return;a.clone(c=>{c.set({left:a.left+24,top:a.top+24});c.nm=(a.nm||'Layer')+' copy';cv.add(c);cv.setActiveObject(c);each(c,lit);cv.requestRenderAll()},['role','base','mat','nm','g','a','tx','mapped','lk'])};
-const del=()=>{cv.getActiveObjects().forEach(o=>cv.remove(o));cv.discardActiveObject();cv.requestRenderAll()};
-$('#gD').onclick=dup;$('#gX').onclick=del;
-addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)||(cv.getActiveObject()||{}).isEditing)return;const m=e.ctrlKey||e.metaKey;
-if(e.key=='Delete'||e.key=='Backspace')del();else if(m&&e.key=='d'){e.preventDefault();dup()}else if(m&&e.key=='g'){e.preventDefault();$(e.shiftKey?'#gU':'#gG').click()}});
-$('#zi').onclick=()=>zoom(Z*1.2);$('#zo').onclick=()=>zoom(Z/1.2);$('#zf').onclick=fit;addEventListener('resize',fit);
-$('#vp').addEventListener('wheel',e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();zoom(Z*(e.deltaY<0?1.1:.9))}},{passive:false});
-const bgs=['chk','dk','lt'];let bi=0;$('#bg').onclick=()=>{bi=(bi+1)%3;$('#cw').className=bgs[bi]};
-$('#tl').onclick=()=>$('#L').classList.toggle('c');$('#tr').onclick=()=>$('#Rr').classList.toggle('c');
-function shot(s,t){cv.discardActiveObject();const z=Z;cv.setZoom(1);cv.setDimensions({width:W,height:H});let o={};
-if(t){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;cv.getObjects().forEach(p=>{if(!p.visible)return;const b=p.getBoundingRect(true,true);x0=Math.min(x0,b.left);y0=Math.min(y0,b.top);x1=Math.max(x1,b.left+b.width);y1=Math.max(y1,b.top+b.height)});
-if(x1>x0){const p=G.sh*2+30;o={left:x0-p,top:y0-p,width:x1-x0+2*p,height:y1-y0+2*p}}}
-const el=cv.toCanvasElement(s,o);zoom(z);return el}
-$('#ex').onclick=async()=>{const s=+$('#xs').value,el=shot(s,$('#tm').checked),name=(G.cur.replace(/\W+/g,'-')+'@'+s+'x.png').toLowerCase(),blob=await new Promise(r=>el.toBlob(r,'image/png'));
-const local=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click()};
-let dl=null;try{dl=window.claude?await claude.use('downloads'):null}catch(e){}
-if(dl){try{await dl.save({filename:name,data:blob})}catch(e){if(e&&e.code!='declined')local()}}else local()};
-$('#p3').onclick=()=>{$('#pi').src=shot(1,1).toDataURL();$('#pi').style.transform='';$('#pv').style.display='flex'};
-$('#pv').onmousemove=e=>{const x=e.clientX/innerWidth-.5,y=e.clientY/innerHeight-.5;$('#pi').style.transform=`rotateY(${x*30}deg) rotateX(${-y*30}deg)`};
-$('#pv').onclick=()=>$('#pv').style.display='none';
-load(0);
+{n:'Smartphone',f:()=>{const cx=17,cy=61,l=(x,y)=>[Y('Lens ring',5.9,1.6,x,y,-5.5,'ti','#9aa0a8'),Y('Lens glass',4.3,.5,x,y,-6.2,'glass','#06080e')];return[
+S('Frame',71.6,147.6,7.9,10,0,0,0,'ti','#8e8a84'),S('Back glass',70.2,146.2,.9,9.3,0,0,-3.55,'glass','#c9cbd0',{ro:.25}),S('Front glass',70.2,146.2,.9,9.3,0,0,3.55,'glass','#040506'),
+D('Display',67.6,143.6,8,0,0,4.02,'phone'),S('Dynamic island',18.5,5.4,.4,2.7,0,66.3,4.2,'black','#000'),
+S('Power key',1.4,11,2.2,.7,36.4,22,0,'ti','#8e8a84'),S('Action key',1.4,6,2.2,.7,-36.4,50,0,'ti','#8e8a84'),S('Volume up',1.4,9,2.2,.7,-36.4,33,0,'ti','#8e8a84'),S('Volume down',1.4,9,2.2,.7,-36.4,17,0,'ti','#8e8a84'),
+S('USB-C',8.6,2.8,1,1.4,0,-73.5,0,'black','#050505',{rx:90}),P('Speaker L','holes',{nx:5,ny:1,px:2.2,py:2.2,rad:.55},-19,-73.85,0,'black','#000',{rx:90}),P('Speaker R','holes',{nx:5,ny:1,px:2.2,py:2.2,rad:.55},19,-73.85,0,'black','#000',{rx:90}),
+S('Camera plateau',33,33,.9,8.5,cx,cy,-4.4,'glass','#171a20',{ro:.2}),...l(cx-7.8,cy+7.8),...l(cx-7.8,cy-7.8),...l(cx+7.8,cy),Y('Flash',1.7,.6,cx+10.5,cy+11,-5,'emit','#fff3cf'),
+P('Logo','text',{txt:'CONCEPT',size:2.4},0,-12,-4.05,'plain','#e8e8ea',{ry:180})]}},
+{n:'Smartwatch',f:()=>[
+S('Strap top',24,62,3.4,3,0,46,-3.4,'rubber','#232a36',{rx:-12}),S('Strap bottom',24,66,3.4,3,0,-48,-3.4,'rubber','#232a36',{rx:12}),
+S('Case',40,47,10.6,12,0,0,0,'ti','#b9b6b0'),Y('Back sensor',8,.8,0,0,-5.4,'glass','#0a0c10'),S('Glass',38,45,1.2,11,0,0,5.1,'glass','#030405'),D('Display',36,43,10,0,0,5.72,'watch'),
+Y('Digital crown',4.4,5,22.2,9,0,'ti','#d6d3cd',{ry:90}),S('Side button',1.8,9,3.6,.9,21.2,-6,0,'ti','#b9b6b0')]},
+{n:'75% Keyboard',flat:1,f:()=>[
+S('Case',330,134,22,10,0,0,0,'alu','#2f343e',{rx:-90}),S('Switch plate',316,119,1,5,0,11.1,0,'black','#050506',{rx:-90}),
+P('Keycaps','keys',{u:19.05,kd:8,gap:1.7,lay:0,fn:1,nx:4,ny:4,c2:'#5b6472'},0,16.5,0,'plastic','#d4d9e1',{rx:-90}),
+Y('Rotary knob',9.5,14,142.9,18.5,-47.6,'alu','#c2c8d2',{rx:-90}),S('USB-C',9,3.4,1,1.6,0,0,-67.1,'black','#030303',{ry:180}),P('Badge','text',{txt:'CONCEPT 75',size:3},-110,11.2,62,'plain','#c9ced8',{rx:-90})]},
+{n:'Macro Pad',flat:1,f:()=>[
+S('Case',100,114,16,7,0,0,0,'carbon','#ffffff',{rx:-90}),S('Switch plate',84,66,1.2,3,0,8.5,14,'black','#050506',{rx:-90}),
+P('Keys','keys',{u:19.05,kd:7,gap:1.9,lay:1,fn:0,nx:4,ny:3,c2:'#ff3d7f'},0,12.8,14,'plastic','#2c313b',{rx:-90}),
+S('OLED bezel',34,19.5,1.4,3,-21,8.4,-38,'glass','#040506',{rx:-90}),D('OLED',30,15.5,2,-21,9.15,-38,'oled',{rx:-90}),
+Y('Encoder A',6,13,16,13.5,-38,'alu','#c2c8d2',{rx:-90}),Y('Encoder B',6,13,36,13.5,-38,'alu','#c2c8d2',{rx:-90}),S('USB-C',9,3.4,1,1.6,0,0,-57.1,'black','#030303',{ry:180})]},
+{n:'Cyber Handheld',f:()=>[
+S('Shell',92,168,24,14,0,0,0,'plastic','#222737',{ro:.5}),S('Screen bezel',80,70,2,5,0,44,12.2,'glass','#05060a'),D('LCD',66,52,2,0,44,13.3,'game'),
+S('Neon strip',80,1.6,.8,.8,0,14,12.1,'emit','#00e5ff'),P('Brand','text',{txt:'NEON·BOY',size:4.2},-14,7,12.1,'emit','#ff2bd6'),
+S('D-pad H',26,8.6,3.2,2,-26,-26,12,'plastic','#12141a'),S('D-pad V',8.6,26,3.2,2,-26,-26,12,'plastic','#12141a'),
+Y('Button A',6.8,3.6,26,-18,12,'plastic','#ff2bd6'),Y('Button B',6.8,3.6,13,-30,12,'plastic','#00e5ff'),
+S('Select',13,3.8,2.4,1.8,-9,-62,12,'plastic','#3b4252',{rz:-25}),S('Start',13,3.8,2.4,1.8,9,-62,12,'plastic','#3b4252',{rz:-25}),
+P('Speaker','holes',{nx:6,ny:3,px:3.4,py:3.4,rad:.9},28,-58,12.05,'black','#000',{rz:-30}),
+S('Cart slot',60,3,3,1,0,84.1,0,'black','#030303',{rx:-90}),S('Battery door',58,76,.8,4,0,-22,-12.2,'plastic','#2b3144',{ry:180}),S('USB-C',9,3.4,1,1.6,0,-84,0,'black','#030303',{rx:90})]},
+{n:'Modular Cyberdeck',f:()=>[
+Y('Antenna A',2.4,100,100,145,-8,'rubber','#14161a',{rx:-90}),Y('Antenna B',2.4,80,118,135,-8,'rubber','#14161a',{rx:-90}),
+S('Chassis',300,190,46,10,0,0,0,'alu','#3b4250'),S('Screen bezel',166,106,2.4,5,-62,34,23,'glass','#05060a'),D('Display',152,92,2,-62,34,24.3,'term'),
+S('Key well',150,44,2,4,-62,-52,23,'black','#06070a'),P('Mini keys','keys',{u:10.9,kd:5,gap:1.4,lay:1,fn:0,nx:13,ny:3,c2:'#6a7384'},-62,-52,27,'plastic','#aab2bf'),
+S('Battery module',60,50,4,4,54,52,23,'plastic','#2a2f38'),P('Battery LEDs','keys',{u:9,kd:.8,gap:3,lay:1,fn:0,nx:5,ny:1,c2:'#fff'},54,38,25.6,'emit','#39ff88'),P('Battery label','text',{txt:'PWR 87%',size:4.4},54,62,25.2,'emit','#c9f7dc'),
+S('Radio module',56,50,4,4,118,52,23,'plastic','#2a2f38'),Y('Tuner dial',12,8,118,52,28,'alu','#c2c8d2'),S('Dial mark',1.2,5,1,.5,118,57,32.2,'plastic','#ffffff'),
+S('IO bay',112,50,2,4,86,-18,23,'black','#050607'),...[46,64,82].map((x,i)=>S('USB-A '+(i+1),14,6,1.2,1,x,-8,24,'black','#000')),S('HDMI',17,6.4,1.2,1,104,-8,24,'black','#000'),
+...[46,64,82,100].map((x,i)=>Y('Toggle '+(i+1),3.2,7,x,-28,26,'alu','#d4d8e0')),P('Vents','holes',{nx:10,ny:3,px:9,py:7,rad:2.2},86,-72,23.05,'black','#000'),
+...[[-140,85],[140,85],[-140,-85],[140,-85]].map(([x,y],i)=>Y('Screw '+(i+1),3.6,2.4,x,y,23,'ti','#9aa0a8')),P('Label','text',{txt:'NODE-7 // CYBERDECK',size:8},-62,-85,23.05,'plain','#cfd5de')]}];
+const DEF={Slab:()=>S('Slab',40,20,6,3,0,0,0,'alu','#9aa1ad'),Cylinder:()=>Y('Knob',8,10,0,0,0,'alu','#c2c8d2'),Sphere:()=>P('Dome','sph',{rad:3},0,0,0,'emit','#ff4d6d'),Screen:()=>D('Screen',60,34,3,0,0,0,'phone'),'Key array':()=>P('Keys','keys',{u:19.05,kd:8,gap:1.6,lay:1,fn:0,nx:4,ny:2,c2:'#6a7384'},0,0,0,'plastic','#2c313b'),Text:()=>P('Label','text',{txt:'LABEL',size:6},0,0,0,'plain','#ffffff')};
+const MODS={
+'Rotary encoder':()=>[Y('Encoder',9,12,0,0,6,'alu','#c2c8d2'),S('Encoder mark',1.2,4.5,1,.5,0,3,12,'plastic','#ffffff')],
+'USB-C port':()=>[S('USB-C frame',11,5,.8,2.4,0,0,0,'alu','#9aa1ad'),S('USB-C',9,3.2,1,1.5,0,0,.2,'black','#020202')],
+'Camera module':()=>[S('Camera plate',33,33,.9,8.5,0,0,0,'glass','#171a20',{ro:.2}),...[[-7.8,7.8],[-7.8,-7.8],[7.8,0]].flatMap(([x,y])=>[Y('Lens ring',5.9,1.6,x,y,.9,'ti','#9aa0a8'),Y('Lens glass',4.3,.5,x,y,1.6,'glass','#06080e')])],
+'Speaker grille':()=>[P('Speaker','holes',{nx:8,ny:4,px:2.4,py:2.4,rad:.7},0,0,0,'black','#000')],
+'Key cluster 2×2':()=>[P('Keys 2×2','keys',{u:15,kd:6,gap:1.6,lay:1,fn:0,nx:2,ny:2,c2:'#6a7384'},0,0,4,'plastic','#2c313b')],
+'RGB light bar':()=>[P('LED bar','keys',{u:8,kd:.8,gap:2.6,lay:1,fn:0,nx:8,ny:1,c2:'#fff'},0,0,0,'emit','#ff2bd6')],
+'OLED display':()=>[S('OLED bezel',34,19.5,1.4,3,0,0,0,'glass','#040506'),D('OLED',30,15.5,2,0,0,.75,'oled')],
+'Antenna':()=>[Y('Antenna',2.4,90,0,45,0,'rubber','#14161a',{rx:-90}),Y('Antenna base',4.4,6,0,3,0,'alu','#9aa1ad',{rx:-90})]};
+const SCH={slab:[['w','Width',1,400,.1],['h','Height',1,320,.1],['d','Depth',.3,80,.1],['r','Corner radius',0,60,.1],['b','Edge bevel',0,4,.05]],cyl:[['rad','Radius',.4,60,.1],['h','Length',.2,120,.1],['b','Chamfer',0,4,.05]],sph:[['rad','Radius',.3,30,.1]],
+scr:[['w','Width',3,300,.1],['h','Height',3,300,.1],['r','Corner radius',0,40,.1],['br','Brightness',0,2,.05]],
+keys:[['u','Key pitch',5,30,.05],['kd','Key height',.5,16,.1],['gap','Gap',.2,8,.1],['lay','Grid mode',0,1,1],['fn','Function row',0,1,1],['nx','Columns',1,16,1],['ny','Rows',1,8,1]],
+holes:[['nx','Columns',1,24,1],['ny','Rows',1,16,1],['px','Spacing X',.5,12,.1],['py','Spacing Y',.5,12,.1],['rad','Hole radius',.1,4,.05]],text:[['size','Size',1,40,.1]],decal:[['w','Width',2,200,.5]]};
+const row=(l,s,k,mn,mx,st,v)=>`<div class="rw"><span>${l}</span><input type="range" data-s="${s}" data-k="${k}" min="${mn}" max="${mx}" step="${st}" value="${v}"><b>${+(+v).toFixed(2)}</b></div>`;
+const V={az:.6,el:.35,d:400,t:new THREE.Vector3()},Vt={az:.6,el:.35,d:400,t:new THREE.Vector3()};
+const placeCam=()=>{const c=Math.cos(V.el);cam.position.set(V.t.x+V.d*c*Math.sin(V.az),V.t.y+V.d*Math.sin(V.el),V.t.z+V.d*c*Math.cos(V.az));cam.lookAt(V.t);cam.updateMatrixWorld()};
+(function loop(){requestAnimationFrame(loop);const da=((Vt.az-V.az+3*Math.PI)%(2*Math.PI))-Math.PI,de=Vt.el-V.el,dd=Vt.d-V.d;
+if(Math.abs(da)+Math.abs(de)+Math.abs(dd)+Vt.t.distanceTo(V.t)>1e-3){V.az+=da*.2;V.el+=de*.2;V.d+=dd*.2;V.t.lerp(Vt.t,.2);dirty=1}if(dirty){dirty=0;placeCam();rd.render(sc,cam)}})();
+new ResizeObserver(()=>{const w=vp.clientWidth,h=vp.clientHeight;rd.setPixelRatio(Math.min(devicePixelRatio,2));rd.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();draw()}).observe(vp);
+function ground(){const b=new THREE.Box3().setFromObject(root),s=new THREE.Sphere();if(b.isEmpty())return;b.getBoundingSphere(s);ctr.copy(s.center);RAD=s.radius;FD=RAD/Math.sin(12*R2)*1.08;gr.position.y=b.min.y-.05;light()}
+const snap=()=>{hist.length=hi+1;hist.push(JSON.stringify(parts));if(hist.length>60)hist.shift();hi=hist.length-1},
+commit=()=>{snap();outliner();ground();draw()},
+reset=()=>{parts.length=0;root.clear();for(const k in OB)delete OB[k]},
+restore=s=>{reset();JSON.parse(s).forEach(p=>parts.push(p));parts.forEach(build);sel=null;bx.visible=false;ground();outliner();inspector();draw()};
+function load(i){tpl=i;reset();T[i].f().forEach(p=>{p.id=uid++;parts.push(p)});parts.forEach(build);ground();sel=null;bx.visible=false;Object.assign(Vt,{az:.61,el:.38,d:FD});Vt.t.copy(ctr);hist=[];hi=-1;snap();outliner();inspector();draw();$('#ts').value=i}
+function select(id){sel=id;bx.visible=!!id;if(id)bx.setFromObject(OB[id]);outliner();inspector();draw()}
+function outliner(){$('#ol').innerHTML=parts.map(p=>`<div class="ly${p.id==sel?' on':''}" data-id="${p.id}"><i data-a="vis" title="Show/hide">${p.hd?'○':'◉'}</i><i data-a="lk" title="Lock">${p.lk?'🔒':'🔓'}</i><span>${p.n}</span><i data-a="dup" title="Duplicate">⧉</i><i data-a="mir" title="Mirror copy">⇋</i><i data-a="del" title="Delete">✕</i></div>`).join('')}
+$('#ol').onclick=e=>{const r=e.target.closest('.ly');if(!r)return;const id=+r.dataset.id,a=e.target.dataset.a,p=PT(id);
+if(a=='vis'){p.hd=!p.hd;OB[id].visible=!p.hd;commit()}else if(a=='lk'){p.lk=!p.lk;commit()}else if(a=='dup')dup(id);else if(a=='mir')dup(id,1);else if(a=='del')del(id);else select(id)};
+function dup(id,m){const p=JSON.parse(JSON.stringify(PT(id)));p.id=uid++;if(m){p.x=-p.x;p.ry=-p.ry;p.rz=-p.rz;p.n+=' (mirror)'}else{p.x+=8;p.n+=' copy'}parts.push(p);build(p);commit();select(p.id)}
+function del(id){const i=parts.findIndex(p=>p.id==id);if(i<0)return;parts.splice(i,1);root.remove(OB[id]);delete OB[id];sel=null;bx.visible=false;commit();inspector()}
+function inspector(){const p=PT(sel),el=$('#pt');if(!p){el.innerHTML='<div class="p-3" style="color:var(--m)">Click a part in the viewport or the Parts list to edit it. Drag it to move; use the sliders for exact values.</div>';return}
+el.innerHTML=`<div class="rw"><span>Name</span><input class="in" data-s="t" data-k="n" value="${p.n}"></div><div class="h">Transform (mm / °)</div>`+[['x','X',-400,400,.1],['y','Y',-400,400,.1],['z','Z',-400,400,.1],['rx','Rotate X',-180,180,1],['ry','Rotate Y',-180,180,1],['rz','Rotate Z',-180,180,1]].map(a=>row(a[1],'t',a[0],a[2],a[3],a[4],p[a[0]])).join('')+'<div class="h">Shape</div>'+(SCH[p.t]||[]).map(a=>row(a[1],'p',a[0],a[2],a[3],a[4],p.p[a[0]])).join('')
++(p.t=='text'?`<div class="rw"><span>Text</span><input class="in" data-s="p" data-k="txt" value="${p.p.txt}"></div>`:'')
++(p.t=='scr'?`<div class="rw"><span>Content</span><select data-s="p" data-k="k">${['phone','watch','game','term','oled'].map(k=>`<option${p.p.k==k?' selected':''}>${k}</option>`).join('')}</select></div><div class="g2" style="grid-template-columns:1fr"><button class="bt" id="up">Upload image to screen…</button></div>`:'')
++'<div class="h">Material</div><div class="rw"><span>Preset</span><select data-s="t" data-k="m">'+Object.entries(MAT).map(([k,m])=>`<option value="${k}"${p.m==k?' selected':''}>${m.n}</option>`).join('')+`</select></div><div class="rw"><span>Color</span><input type="color" data-s="t" data-k="c" value="${p.c}">${p.t=='keys'?`<input type="color" data-s="p" data-k="c2" value="${p.p.c2||p.c}"><small style="color:var(--m)">mods</small>`:''}</div>`+row('Roughness','t','ro',0,1,.01,p.ro??MAT[p.m].r)+row('Metalness','t','me',0,1,.01,p.me??MAT[p.m].m)}
+$('#R').addEventListener('input',e=>{const t=e.target,s=t.dataset.s,k=t.dataset.k;if(!s)return;const v=t.type=='range'?+t.value:t.value;
+if(s=='g'){G[k]=v;if(k=='ex')rd.toneMappingExposure=v;if(k=='sh')gr.material.opacity=v;if(k=='la'||k=='le')env();else light();t.nextElementSibling.textContent=+v.toFixed(2);draw();return}
+const p=PT(sel);if(!p)return;if(s=='t')p[k]=v;else p.p[k]=v;if(t.type=='range')t.nextElementSibling.textContent=+v.toFixed(2);if(k=='m'){delete p.ro;delete p.me}
+if(k=='n')outliner();else if('x y z rx ry rz'.split(' ').includes(k)){OB[p.id].position.set(p.x,p.y,p.z);OB[p.id].rotation.set(p.rx*R2,p.ry*R2,p.rz*R2)}else build(p);bx.setFromObject(OB[p.id]);draw()});
+$('#R').addEventListener('change',e=>{const s=e.target.dataset.s;if(s&&s!='g'){if(e.target.dataset.k=='m')inspector();commit()}});
+$('#R').addEventListener('click',e=>{if(e.target.id=='up')upload(id=>{const p=PT(sel);p.p.k='img:'+id;build(p);commit()})});
+function upload(cb){$('#fi').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>new THREE.TextureLoader().load(r.result,t=>{t.encoding=THREE.sRGBEncoding;t.anisotropy=8;const id='i'+uid++;IM[id]=t;cb(id)});r.readAsDataURL(f);e.target.value=''};$('#fi').click()}
+$('#pl').onclick=()=>upload(id=>{placing=id;$('#hint').textContent='Click a surface to place the logo / decal'});
+function addMany(a){tv.copy(cam.getWorldDirection(tv)).multiplyScalar(-RAD*.5).add(ctr);a.forEach(p=>{p.x+=tv.x;p.y+=tv.y;p.z+=tv.z;p.id=uid++;parts.push(p);build(p)});commit();select(a[0].id)}
+Object.keys(DEF).forEach(k=>{const b=document.createElement('button');b.className='bt';b.textContent='+ '+k;b.onclick=()=>addMany([DEF[k]()]);$('#ad').append(b)});
+Object.keys(MODS).forEach(k=>{const b=document.createElement('button');b.className='bt';b.textContent=k;b.onclick=()=>addMany(MODS[k]());$('#md').append(b)});
+T.forEach((t,i)=>$('#ts').add(new Option(t.n,i)));$('#ts').onchange=e=>load(+e.target.value);
+const VW={Front:[0,0],Back:[180,0],Left:[-90,0],Right:[90,0],Top:[0,89],Bottom:[0,-89],'3/4':[35,22],Iso:[45,35]};
+Object.entries(VW).forEach(([k,[a,e]])=>{const b=document.createElement('button');b.className='bt';b.textContent=k;b.onclick=()=>{Vt.az=a*R2;Vt.el=e*R2;Vt.d=FD;Vt.t.copy(ctr)};$('#vb').append(b)});
+['Part','Scene','Export'].forEach((n,i)=>{const b=document.createElement('button');b.className='bt'+(i?'':' on');b.textContent=n;b.onclick=()=>[...$('#tb').children].forEach((x,j)=>{x.classList.toggle('on',i==j);$('#rp').children[j].style.display=i==j?'':'none'});$('#tb').append(b)});
+$('#sc2').innerHTML='<div class="h">Studio lighting</div>'+[['Light angle','la',0,360,1],['Light height','le',5,85,1],['Key light','li',0,3,.05],['Exposure','ex',.4,2,.05],['Ground shadow','sh',0,1,.02]].map(a=>row(a[0],'g',a[1],a[2],a[3],a[4],G[a[1]])).join('')+'<div class="h">Backdrop (preview only)</div><div class="g2" id="bgs"></div><div class="p-3" style="color:var(--m)">The light angle rotates the softbox reflections on glass and metal and the cast shadow together.</div>';
+Object.entries({Transparent:'',Dark:'#0b0c0f',Light:'#e9ecf1',Studio:'radial-gradient(#3a404c,#101216)'}).forEach(([k,v])=>{const b=document.createElement('button');b.className='bt';b.textContent=k;b.onclick=()=>vp.style.background=v||'';$('#bgs').append(b)});
+const ray=e=>{const r=cvs.getBoundingClientRect();ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);rc.setFromCamera(ndc,cam)},
+pick=e=>{ray(e);for(const h of rc.intersectObjects(root.children,true)){let o=h.object;while(o&&o.userData.id==null)o=o.parent;const p=o&&PT(o.userData.id);if(p&&!p.hd&&!p.lk)return{p,h}}};
+cvs.addEventListener('pointerdown',e=>{cvs.setPointerCapture(e.pointerId);const h=pick(e);lx=e.clientX;ly=e.clientY;moved=0;
+if(placing&&h){const n=h.h.face.normal.clone().transformDirection(h.h.object.matrixWorld),q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),n),eu=new THREE.Euler().setFromQuaternion(q),pt=h.h.point.clone().addScaledVector(n,.06);
+const p=P('Decal','decal',{w:24,img:placing},pt.x,pt.y,pt.z,'plain','#ffffff',{rx:eu.x/R2,ry:eu.y/R2,rz:eu.z/R2});p.id=uid++;parts.push(p);build(p);placing=null;$('#hint').textContent=HINT;commit();select(p.id);return}
+if(e.button==2||e.shiftKey||e.button==1)mode='pan';else if(h){select(h.p.id);mode='move';pn.setFromNormalAndCoplanarPoint(cam.getWorldDirection(tv),h.h.point);mv={p:h.p,off:h.h.point.clone().sub(new THREE.Vector3(h.p.x,h.p.y,h.p.z)),d:0}}else mode='orbit'});
+cvs.addEventListener('pointermove',e=>{if(!mode)return;const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;moved+=Math.abs(dx)+Math.abs(dy);
+if(mode=='orbit'){Vt.az=V.az-=dx*.006;Vt.el=V.el=clamp(V.el+dy*.006,-1.55,1.55)}
+else if(mode=='pan'){const a=new THREE.Vector3().setFromMatrixColumn(cam.matrix,0),b=new THREE.Vector3().setFromMatrixColumn(cam.matrix,1),k=V.d*.0016;V.t.addScaledVector(a,-dx*k).addScaledVector(b,dy*k);Vt.t.copy(V.t)}
+else if(mv&&moved>3){ray(e);const pt=new THREE.Vector3();if(!rc.ray.intersectPlane(pn,pt))return;pt.sub(mv.off);const f=v=>G.sn?Math.round(v*2)/2:v;mv.p.x=f(pt.x);mv.p.y=f(pt.y);mv.p.z=f(pt.z);OB[mv.p.id].position.set(mv.p.x,mv.p.y,mv.p.z);bx.setFromObject(OB[mv.p.id]);mv.d=1}draw()});
+cvs.addEventListener('pointerup',()=>{if(mode=='orbit'&&moved<4)select(null);if(mv&&mv.d){commit();inspector()}mode=null;mv=null});
+cvs.addEventListener('wheel',e=>{e.preventDefault();Vt.d=V.d=clamp(V.d*Math.exp(e.deltaY*.001),40,5000);draw()},{passive:false});cvs.addEventListener('contextmenu',e=>e.preventDefault());
+$('#sn').onchange=e=>G.sn=e.target.checked?1:0;$('#un').onclick=()=>{if(hi>0)restore(hist[--hi])};$('#re').onclick=()=>{if(hi<hist.length-1)restore(hist[++hi])};
+addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;const m=e.ctrlKey||e.metaKey;if((e.key=='Delete'||e.key=='Backspace')&&sel)del(sel);else if(m&&e.key=='d'&&sel){e.preventDefault();dup(sel)}else if(m&&e.key=='z'){e.preventDefault();$(e.shiftKey?'#re':'#un').click()}else if(m&&e.key=='y')$('#re').click()});
+const HINT='Drag a part: move · Drag empty space: orbit · Right-drag / Shift-drag: pan · Wheel: zoom';$('#hint').textContent=HINT;
+async function out(sheet){bx.visible=false;const s=+$('#xs').value,w=cvs.clientWidth,h=cvs.clientHeight,pr=rd.getPixelRatio(),sv=[V.az,V.el,V.d,V.t.clone()],gv=gr.visible,k=sheet?Math.min(s,2):s;gr.visible=$('#xg').checked;
+rd.setPixelRatio(k);rd.setSize(w,h,false);let c=cvs;
+const shot=(a,e)=>{V.az=a;V.el=e;V.d=FD;V.t.copy(ctr);placeCam();rd.render(sc,cam)};
+if(sheet){c=document.createElement('canvas');c.width=2*w*k;c.height=2*h*k;const x=c.getContext('2d');(T[tpl].flat?[[35,28],[0,89],[0,6],[215,28]]:[[0,0],[35,18],[90,0],[180,0]]).forEach(([a,e],i)=>{shot(a*R2,e*R2);x.drawImage(cvs,i%2*w*k,(i>>1)*h*k)})}else{placeCam();rd.render(sc,cam)}
+const blob=await new Promise(r=>c.toBlob(r,'image/png')),name=T[tpl].n.replace(/\W+/g,'-').toLowerCase()+(sheet?'-sheet':'')+'@'+k+'x.png';
+rd.setPixelRatio(pr);rd.setSize(w,h,false);[V.az,V.el,V.d]=sv;V.t.copy(sv[3]);gr.visible=gv;bx.visible=!!sel;draw();
+const local=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click()};let dl=null;try{dl=window.claude?await claude.use('downloads'):null}catch(e){}
+if(dl){try{await dl.save({filename:name,data:blob})}catch(e){if(e&&e.code!='declined')local()}}else local()}
+$('#ex').onclick=$('#e1').onclick=()=>out(0);$('#e2').onclick=()=>out(1);
+env();load(0);
 </script></body></html>
